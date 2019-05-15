@@ -29,7 +29,7 @@ class MobilePurchaseRequest extends AbstractMobileRequest
             "customer_email"      => $this->getCustomerEmail(),
             "return_url"          => $this->getReturnUrl(),
             "secret"              => $this->getSecret(),
-            "gateway_url"         => $this->getEndpoint(),
+            "gateway_url"         => $this->getEndpoint('pay'),
         );
 
         return $data;

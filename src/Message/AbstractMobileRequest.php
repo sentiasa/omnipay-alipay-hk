@@ -15,21 +15,21 @@ abstract class AbstractMobileRequest extends AbstractRequest
     protected $paymentEndpoint = 'https://payment.pa-sys.com/';
     protected $gatewayEndpoint = 'https://gateway.pa-sys.com/';
 
-    public function getEndpoint()
+    public function getEndpoint($transaction_request)
     {
-        if ($this->getTransactionRequest() == 'pay') {
+        if ($transaction_request == 'pay') {
             return $this->paymentEndpoint . 'app/page/' . $this->getMerchantToken();
         }
 
-        if ($this->getTransactionRequest() == 'query') {
+        if ($transaction_request == 'query') {
             return $this->gatewayEndpoint . $this->getMerchantToken() . '/payment/query';
         }
 
-        if ($this->getTransactionRequest() == 'refund') {
+        if ($transaction_request == 'refund') {
             return $this->gatewayEndpoint . $this->getMerchantToken() . 'payout/request';
         }
 
-        if ($this->getTransactionRequest() == 'refund_query') {
+        if ($transaction_request == 'refund_query') {
             return $this->gatewayEndpoint . $this->getMerchantToken() . 'payout/query';
         }
     }
@@ -153,16 +153,5 @@ abstract class AbstractMobileRequest extends AbstractRequest
     public function setSecret($value)
     {
         return $this->setParameter('secret', $value);
-    }
-
-
-    public function getTransactionRequest()
-    {
-        return $this->getParameter('transaction_request');
-    }
-
-    public function setTransactionRequest($value)
-    {
-        return $this->setParameter('transaction_request', $value);
     }
 }

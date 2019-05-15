@@ -22,25 +22,14 @@ class MobileRefundRequest extends AbstractMobileRequest
     public function getData()
     {
         $this->validate(
-            'app_id',
-            'rsa_private_key',
-            'sign_type',
-            'alipay_rsa_public_key',
-            'out_trade_no',
-            'refund_amount',
-            'out_request_no',
-            'trade_no'
+            'merchant_reference',
+            'secret'
         );
 
         $data = array(
-            "app_id"                => $this->getAppId(),
-            "rsa_private_key"       => $this->getRsaPrivateKey(),
-            "sign_type"             => $this->getSignType(),
-            "alipay_rsa_public_key" => $this->getAlipayRsaPublicKey(),
-            "out_trade_no"          => $this->getOutTradeNo(),
-            "refund_amount"         => $this->getRefundAmount(),
-            "out_request_no"        => $this->getOutRequestNo(),
-            'trade_no'              => $this->getTradeNo(),
+            "merchant_reference"  => $this->getMerchantReference(),
+            "secret"              => $this->getSecret(),
+            "gateway_url"         => $this->getEndpoint('query'),
         );
 
         return $data;
@@ -55,38 +44,32 @@ class MobileRefundRequest extends AbstractMobileRequest
      */
     public function sendData($data)
     {
-        $aop                     = new \AopClient ();
-        $aop->gatewayUrl         = $this->getEndpoint();
-        $aop->appId              = $data['app_id'];
-        $aop->rsaPrivateKey      = $data['rsa_private_key'];
-        $aop->alipayrsaPublicKey = $data['alipay_rsa_public_key'];
-        $aop->apiVersion         = '1.0';
-        $aop->signType           = $data['sign_type'];
-        $aop->postCharset        = 'UTF-8';
-        $aop->format             = 'json';
-        $request                 = new \AlipayTradeRefundRequest ();
+        $fields = [
+            'merchant_reference' => $data['merchant_reference']
+        ];
 
-        $biz_content = array(
-            "out_trade_no"   => $data['out_trade_no'],
-            "trade_no"       => $data['trade_no'],
-            "refund_amount"  => $data['refund_amount'],
-            "out_request_no" => $data['out_request_no'],
-        );
+        $fields['sign'] = Helper::genHashValue($fields, $data['secret']);
 
-        $biz_content = json_encode($biz_content);
+        $response = Helper::sendHttpRequest($data['gateway_url'], $fields);
 
-        $request->setBizContent($biz_content);
-        $result = $aop->execute($request);
+        $order = [
+            'amount'             => $response['amount'],
+            'currency'           => $response['currency'],
+            'request_reference'  => $response['request_reference'],
+            'merchant_reference' => $response['merchant_reference'],
+            'status'             => $response['status']
+        ];
 
-        $responseNode = str_replace(".", "_", $request->getApiMethodName()) . "_response";
-        $resultCode   = $result->$responseNode->code;
-
-        if (! empty($resultCode) && $resultCode == 10000) {
-            $data['is_paid'] = true;
-        } else {
-            $data['is_paid'] = false;
+        $response['is_paid'] = false;
+        if ($response['sign'] === Helper::genHashValue($order, $this->getSecret())
+            && bccomp($this->getAmount(), $order['amount'], 2) === 0
+            && $this->getCurrency() === $order['currency']
+            && $this->getMerchantReference() === $order['merchant_reference']
+            && $response['status'] === '1'
+        ) {
+            $response['is_paid'] = true;
         }
 
-        return $this->response = new MobileRefundResponse($this, array_merge($data, (array)$result->$responseNode));
+        return $this->response = new MobileRefundResponse($this, array_merge($data, $response));
     }
 }

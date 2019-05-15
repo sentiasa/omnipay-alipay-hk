@@ -38,14 +38,6 @@ class MobileCompletePurchaseRequest extends AbstractMobileRequest
      */
     public function sendData($data)
     {
-        $order = [
-            'merchant_reference' => $this->getMerchantReference(),
-            'currency'           => $this->getCurrency(),
-            'amount'             => $this->getAmount()
-        ];
-
-        $secret = $this->getSecret();
-
         $fields = [
             'amount'             => $data['amount'],
             'currency'           => $data['currency'],
@@ -54,15 +46,11 @@ class MobileCompletePurchaseRequest extends AbstractMobileRequest
             'status'             => $data['status']
         ];
 
-        $sign = $data['sign'];
-
-        ksort($fields);
-
         $data['is_paid'] = false;
-        if ($sign === hash('SHA512', http_build_query($fields) . $secret)
-            && bccomp($order['amount'], $fields['amount'], 2) === 0
-            && $order['currency'] === $fields['currency']
-            && $order['merchant_reference'] === $fields['merchant_reference']
+        if ($data['sign'] === Helper::genHashValue($fields, $this->getSecret())
+            && bccomp($this->getAmount(), $fields['amount'], 2) === 0
+            && $this->getCurrency() === $fields['currency']
+            && $this->getMerchantReference() === $fields['merchant_reference']
             && $data['status'] === '1'
         ) {
             $data['is_paid'] = true;

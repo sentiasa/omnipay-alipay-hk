@@ -29,7 +29,7 @@ class MobileQueryRequest extends AbstractMobileRequest
         $data = array(
             "merchant_reference"  => $this->getMerchantReference(),
             "secret"              => $this->getSecret(),
-            "gateway_url"         => $this->getEndpoint(),
+            "gateway_url"         => $this->getEndpoint('query'),
         );
 
         return $data;
@@ -44,7 +44,32 @@ class MobileQueryRequest extends AbstractMobileRequest
      */
     public function sendData($data)
     {
+        $fields = [
+            'merchant_reference' => $data['merchant_reference']
+        ];
 
-        return array_merge($data, (array) $result->$responseNode);
+        $fields['sign'] = Helper::genHashValue($fields, $data['secret']);
+
+        $response = Helper::sendHttpRequest($data['gateway_url'], $fields);
+
+        $order = [
+            'amount'             => $response['amount'],
+            'currency'           => $response['currency'],
+            'request_reference'  => $response['request_reference'],
+            'merchant_reference' => $response['merchant_reference'],
+            'status'             => $response['status']
+        ];
+
+        $response['is_paid'] = false;
+        if ($response['sign'] === Helper::genHashValue($order, $this->getSecret())
+            && bccomp($this->getAmount(), $order['amount'], 2) === 0
+            && $this->getCurrency() === $order['currency']
+            && $this->getMerchantReference() === $order['merchant_reference']
+            && $response['status'] === '1'
+        ) {
+            $response['is_paid'] = true;
+        }
+
+        return array_merge($data, $response);
     }
 }

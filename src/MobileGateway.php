@@ -143,17 +143,6 @@ class MobileGateway extends AbstractGateway
     }
 
 
-    public function getTransactionRequest()
-    {
-        return $this->getParameter('transaction_request');
-    }
-
-    public function setTransactionRequest($value)
-    {
-        return $this->setParameter('transaction_request', $value);
-    }
-
-
     public function purchase(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\AlipayHk\Message\MobilePurchaseRequest', $parameters);

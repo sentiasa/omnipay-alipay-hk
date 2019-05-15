@@ -63,12 +63,10 @@ class MobilePurchaseResponse extends AbstractResponse implements RedirectRespons
             'customer_last_name'  => $data['customer_last_name'],
             'customer_phone'      => $data['customer_phone'],
             'customer_email'      => $data['customer_email'],
-            'return_url'          => $data['return_url']
+//            'return_url'          => $data['return_url'] // IP地址不能作为回调地址
         ];
 
-        ksort($fields);
-
-        $fields['sign'] = hash('SHA512', http_build_query($fields) . $data['secret']);
+        $fields['sign'] = Helper::genHashValue($fields, $data['secret']);
 
         $html = <<<eot
 <!DOCTYPE html>
@@ -80,9 +78,12 @@ class MobilePurchaseResponse extends AbstractResponse implements RedirectRespons
     
     <body onload="document.forms['payment'].submit();"> 
         <form method="POST" action="{$data['gateway_url']}" name="payment" accept-charset="utf-8">
-            {foreach($fields as $_k => $_v) { }
-            <input type="hidden" name="{$_k}" value="{$_v}" />   
-            {}} 
+eot;
+        foreach($fields as $k => $v) {
+            $html .= '<input type="hidden" name="' . $k . '" value="' . $v . '" />';
+        }
+
+        $html .= <<<eot
         </form> 
     </body> 
 </html>
