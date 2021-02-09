@@ -1,5 +1,5 @@
 {
-  "name": "wjminions/omnipay-alipay-hk",
+  "name": "sentiasa/omnipay-alipay-hk",
   "type": "library",
   "description": "Alipay Hk gateway for Omnipay payment processing library",
   "keywords": [
@@ -13,14 +13,6 @@
     "payment",
     "purchase"
   ],
-  "homepage": "https://github.com/wjminions/omnipay-alipay-hk",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "wjminions",
-        "homepage": "https://github.com/wjminions/omnipay-alipay-hk"
-    }
-  ],
   "autoload": {
     "psr-4": {
       "Omnipay\\AlipayHk\\": "src/"
@@ -30,6 +22,6 @@
     "omnipay/common": "^3.0"
   },
   "require-dev": {
-    "omnipay/tests": "~2.0"
+    "omnipay/tests": "~3.0"
   }
 }
