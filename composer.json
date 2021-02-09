@@ -13,6 +13,14 @@
     "payment",
     "purchase"
   ],
+  "homepage": "https://github.com/sentiasa/omnipay-alipay-hk",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "test",
+      "email": "test@example.com"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Omnipay\\AlipayHk\\": "src/"
